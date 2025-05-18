@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "outDir": "./dist", // 指定输出目录（如 ./dist）
+    "rootDir": "./src", // 指定源代码目录（如 ./src）
+    "noEmit": false, // 确保允许输出文件（默认 false）
+    "useDefineForClassFields": true, // 确保类字段符合新标准
+    // "experimentalDecorators": false,    // 关闭旧版装饰器
+    // "emitDecoratorMetadata": false,     // 关闭元数据发射
+    "experimentalDecorators": true, // 启用旧版装饰器语法
+    "emitDecoratorMetadata": true // 可选：需要反射元数据时启用
+    // "moduleResolution": "NodeNext", // Node.js 模块解析策略
+    // "module": "NodeNext",
+    // "target": "ES2022",
+    // "esModuleInterop": true
+  }
+}
