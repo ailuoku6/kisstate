@@ -1,27 +1,26 @@
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 
-import { ObservableClass, watchProps, observer, computed } from 'kiss-state';
+import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
 
 @ObservableClass
 class User {
-  name = 'gy';
+  name = 'jude';
   age = 26;
 
   constructor() {
-    console.log('------------test constructor');
     this.age = 17;
   }
 
   @watchProps<User>('age')
   onAgeChange() {
-    console.log('---------agechange', this, this.age);
+    console.log('agechange', this, this.age);
   }
 
   @watchProps<User>('name')
   onNameChange() {
-    console.log('---------namechange', this.name);
+    console.log('namechange', this.name);
   }
 
   @computed<User>('age')
@@ -36,7 +35,7 @@ class User {
 
   @computed<User>('name')
   get fullName() {
-    return this.name + 'jude';
+    return 'hey ' + this.name;
   }
 }
 
@@ -55,17 +54,11 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => user.age++}>
-          age is {user.age} next is {user.nextAge} fullname is {user.fullName}{' '}
-          nextnextage {user.nextnextAge}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button onClick={() => user.age++}>age is {user.age}</button>
+        <p>next is {user.nextAge}</p>
+        <p>nextnextage {user.nextnextAge}</p>
+        <p>say {user.fullName}</p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }

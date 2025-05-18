@@ -16,7 +16,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "kiss-state": ["./packages/kiss-state/src"],
+      "kisstate": ["./packages/kiss-state/src"],
       "example-app": ["./packages/example-app/src"]
     }
   },

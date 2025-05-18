@@ -1,5 +1,9 @@
 import { renderEffctWeakMap } from '../store';
 
+// 类型定义
+type Constructor<T = object> = new (...args: any[]) => T;
+type PropertyKeyOf<T> = keyof T & string;
+
 type WatchFnType = {
   methodName: string;
   deps: string[];
@@ -7,59 +11,63 @@ type WatchFnType = {
 
 // 类装饰器：使类变为可观察对象
 export function ObservableClass<T extends new (...args: any[]) => object>(
-  constructor: T,
+  Constructor_: T,
 ) {
-  return class extends constructor {
-    constructor(...args: any[]) {
-      super(...args);
+  const NewConstructor = function (...args: any[]) {
+    // 正确使用 new 调用原始构造函数
+    const instance = new Constructor_(...args);
 
-      // 创建代理对象
-      const proxy = new Proxy(this, {
-        set: (target, prop: string, value) => {
-          // const oldValue = Reflect.get(target, prop);
-          const result = Reflect.set(target, prop, value);
+    // 创建代理对象
+    const proxy = new Proxy(instance, {
+      set: (target, prop: string, value) => {
+        // const oldValue = Reflect.get(target, prop);
+        const result = Reflect.set(target, prop, value);
 
-          // 触发所有监听回调
-          const handlers = renderEffctWeakMap.get(proxy) || [];
-          handlers.forEach((handler) => handler());
-
-          return result;
-        },
-      });
-
-      // proxyMap.set(this, proxy); // 缓存原始实例与代理的关系
-      const watchFns = constructor.prototype.__watchFns || [];
-
-      const self = proxy;
-
-      watchFns.forEach((watchFn: WatchFnType) => {
-        let cacheValue: any[] = [];
-        const handler = () => {
-          const newValue = watchFn.deps.map((key) => self[key]);
-          const hasDiff = newValue.some(
-            (value, index) => value !== cacheValue[index],
-          );
-          cacheValue = newValue;
-          if (hasDiff) {
-            self[watchFn.methodName]?.();
-          }
-        };
+        // 触发所有监听回调
         const handlers = renderEffctWeakMap.get(proxy) || [];
+        handlers.forEach((handler) => handler());
 
-        handlers.push(handler);
-        renderEffctWeakMap.set(proxy, handlers);
-      });
+        return result;
+      },
+    });
 
+    // proxyMap.set(this, proxy); // 缓存原始实例与代理的关系
+    const watchFns = Constructor_.prototype.__watchFns || [];
+
+    const self: any = proxy;
+
+    watchFns.forEach((watchFn: WatchFnType) => {
+      let cacheValue: any[] = [];
+      const handler = () => {
+        const newValue = watchFn.deps.map((key) => self[key]);
+        const hasDiff = newValue.some(
+          (value, index) => value !== cacheValue[index],
+        );
+        cacheValue = newValue;
+        if (hasDiff) {
+          self[watchFn.methodName]?.();
+        }
+      };
       const handlers = renderEffctWeakMap.get(proxy) || [];
-      handlers.forEach((handler) => handler());
-      return proxy; // 替换为代理对象
-    }
-  };
-}
 
-// 类型定义
-type Constructor<T = object> = new (...args: any[]) => T;
-type PropertyKeyOf<T> = keyof T & string;
+      handlers.push(handler);
+      renderEffctWeakMap.set(proxy, handlers);
+    });
+
+    const handlers = renderEffctWeakMap.get(proxy) || [];
+    handlers.forEach((handler) => handler());
+    return proxy; // 替换为代理对象
+  };
+
+  // 设置原型链以继承原始类的方法
+  NewConstructor.prototype = Object.create(Constructor_.prototype);
+  NewConstructor.prototype.constructor = NewConstructor;
+
+  // 拷贝静态属性（可选）
+  Object.assign(NewConstructor, Constructor_);
+
+  return NewConstructor as unknown as T;
+}
 
 // 装饰器工厂：强约束属性名必须是目标类的属性
 export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
@@ -72,13 +80,13 @@ export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
       throw new Error('@WatchProps 只能装饰方法');
     }
 
-    const watchFns = target.__watchFns || [];
+    const watchFns = (target as any).__watchFns || [];
     watchFns.push({
       methodName,
       deps: props,
     });
 
-    target.__watchFns = watchFns;
+    (target as any).__watchFns = watchFns;
   };
 }
 
@@ -98,7 +106,7 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
     let isFirstCall = true;
     let cacheValue: any[] = [];
 
-    const watcher = (self) => {
+    const watcher = (self: any) => {
       // 变化后对数据进行标脏
       const handleEffect = () => {
         const deps = props;
