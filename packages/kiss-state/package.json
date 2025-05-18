@@ -1,6 +1,6 @@
 {
   "name": "kisstate",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,13 @@
     "build": "tsc",
     "roll-build": "rollup -c"
   },
-  "keywords": [],
+  "keywords": [
+    "observable",
+    "react-component",
+    "react",
+    "model",
+    "state management"
+  ],
   "author": "",
   "license": "ISC",
   "peerDependencies": {
