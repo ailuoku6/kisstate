@@ -1,5 +1,7 @@
 # kisstate
 
+[English Version](./README_EN.md)
+
 **kisstate** 是一个遵循 KISS（Keep It Simple, Stupid）原则的轻量级状态管理库，专为 React 应用设计。通过简洁的装饰器和响应式设计，帮助开发者轻松管理组件状态，告别复杂的状态逻辑。
 
 ---
