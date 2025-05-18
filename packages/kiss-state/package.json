@@ -1,6 +1,6 @@
 {
   "name": "kisstate",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,5 +30,10 @@
     "typescript": "^5.4.3",
     "web-vitals": "^2.1.0"
   },
-  "packageManager": "pnpm@10.6.3"
+  "packageManager": "pnpm@10.6.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ailuoku6/kisstate"
+  },
+  "homepage": "https://github.com/ailuoku6/kisstate"
 }
