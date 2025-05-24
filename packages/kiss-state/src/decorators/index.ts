@@ -21,6 +21,17 @@ const execEffect = (self: any) => {
   handlers.forEach((handler) => handler());
 };
 
+const execCallbackByPropName = (
+  callbackMap: CallbackMapType,
+  propName: string,
+) => {
+  (callbackMap?.keys() || [])
+    .filter((callbackhandler) => {
+      return callbackMap.get(callbackhandler)?.has(propName);
+    })
+    .forEach((handler) => handler?.());
+};
+
 const pushEffect = (self: any, handleEffect: EffectCallback) => {
   const handlers = renderEffctWeakMap.get(self) || [];
   handlers.push(handleEffect);
@@ -51,13 +62,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
         if (hasChange) {
           // 触发所有监听回调
           execEffect(proxy);
-
-          callbackMap
-            .keys()
-            .filter((callbackhandler) => {
-              return callbackMap.get(callbackhandler)?.has(prop);
-            })
-            .forEach((handler) => handler?.());
+          execCallbackByPropName(callbackMap, prop);
         }
 
         return result;
@@ -168,11 +173,7 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
           // 触发computed副作用
           execEffect(self);
           const callbackMap = self.__callbackMap__ as CallbackMapType;
-          (callbackMap?.keys() || [])
-            .filter((callbackhandler) => {
-              return callbackMap.get(callbackhandler)?.has(methodName);
-            })
-            .forEach((handler) => handler?.());
+          execCallbackByPropName(callbackMap, methodName);
         }
       };
       pushEffect(self, handleEffect);
