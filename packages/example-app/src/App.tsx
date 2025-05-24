@@ -3,7 +3,7 @@ import viteLogo from '/vite.svg';
 
 import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 @ObservableClass
 class User {
@@ -22,6 +22,16 @@ class User {
   @watchProps<User>('name')
   onNameChange() {
     console.log('namechange', this.name);
+  }
+
+  @watchProps<User>('nextAge')
+  onNextAgeChange() {
+    console.log('next age change', this.nextAge);
+  }
+
+  @watchProps<User>('nextnextAge')
+  onNextNextAgeChange() {
+    console.log('nextnext age change', this.nextnextAge);
   }
 
   @computed<User>('age')
@@ -69,16 +79,41 @@ function App(props: any) {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        {/* <button onClick={() => user.age++}>age is {user.age}</button>
+        <button onClick={() => user.age++}>age is {user.age}</button>
         <p>next is {user.nextAge}</p>
         <p>nextnextage {user.nextnextAge}</p>
-        <p>say {user.fullName}</p> */}
+        <p>say {user.fullName}</p>
       </div>
       {true && <Child />}
     </>
   );
 }
 
-const HocApp = observer(App);
+class AppClass extends React.Component {
+  render(): React.ReactNode {
+    return (
+      <>
+        <div>
+          <a href="https://vite.dev" target="_blank">
+            <img src={viteLogo} className="logo" alt="Vite logo" />
+          </a>
+          <a href="https://react.dev" target="_blank">
+            <img src={reactLogo} className="logo react" alt="React logo" />
+          </a>
+        </div>
+        <h1>Vite + React</h1>
+        <div className="card">
+          <button onClick={() => user.age++}>age is {user.age}</button>
+          <p>next is {user.nextAge}</p>
+          <p>nextnextage {user.nextnextAge}</p>
+          <p>say {user.fullName}</p>
+        </div>
+        {user.age < 10 && <Child />}
+      </>
+    );
+  }
+}
+
+const HocApp = observer(AppClass);
 
 export default HocApp;

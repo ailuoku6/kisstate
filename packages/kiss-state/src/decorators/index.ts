@@ -21,7 +21,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     // 正确使用 new 调用原始构造函数
     const instance = new Constructor_(...args);
 
-    const callbackWeakMap = new Map<Function, Set<string | Symbol>>();
+    const callbackMap = new Map<Function, Set<string | Symbol>>();
 
     // 创建代理对象
     const proxy = new Proxy(instance, {
@@ -34,10 +34,10 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
           const handlers = renderEffctWeakMap.get(proxy) || [];
           handlers.forEach((handler) => handler());
 
-          callbackWeakMap
+          callbackMap
             .keys()
             .filter((callbackhandler) => {
-              return callbackWeakMap.get(callbackhandler)?.has(prop);
+              return callbackMap.get(callbackhandler)?.has(prop);
             })
             .forEach((handler) => handler?.());
         }
@@ -48,13 +48,13 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
         const curCallBack = globalStore.curCallBack;
         if (curCallBack) {
           const linsenSet =
-            callbackWeakMap.get(curCallBack) || new Set<string | Symbol>();
+            callbackMap.get(curCallBack) || new Set<string | Symbol>();
 
           linsenSet.add(p);
 
-          callbackWeakMap.set(curCallBack, linsenSet);
+          callbackMap.set(curCallBack, linsenSet);
           addClearCallbackArray(curCallBack, () => {
-            callbackWeakMap.delete(curCallBack);
+            callbackMap.delete(curCallBack);
           });
         }
         return Reflect.get(target, p, receiver);
@@ -146,6 +146,10 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
         cacheValue = newValue;
         if (hasDiff) {
           isDirty = true;
+          cache = originFn.call(self);
+          isDirty = false;
+          const handlers = renderEffctWeakMap.get(self) || [];
+          handlers.forEach((handler) => handler());
         }
       };
 
