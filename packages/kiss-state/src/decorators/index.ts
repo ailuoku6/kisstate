@@ -1,4 +1,8 @@
-import { renderEffctWeakMap, globalStore } from '../store';
+import {
+  renderEffctWeakMap,
+  globalStore,
+  addClearCallbackArray,
+} from '../store';
 
 // 类型定义
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -22,27 +26,26 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     // 创建代理对象
     const proxy = new Proxy(instance, {
       set: (target, prop: string, value) => {
-        // const oldValue = Reflect.get(target, prop);
-        console.log('--------fgylog set!!', target, prop);
-
+        const oldValue = Reflect.get(target, prop);
         const result = Reflect.set(target, prop, value);
-        // 触发所有监听回调
-        const handlers = renderEffctWeakMap.get(proxy) || [];
-        handlers.forEach((handler) => handler());
+        const hasChange = oldValue !== value;
+        if (hasChange) {
+          // 触发所有监听回调
+          const handlers = renderEffctWeakMap.get(proxy) || [];
+          handlers.forEach((handler) => handler());
 
-        // TODO: 避免内存泄漏
-        callbackWeakMap
-          .keys()
-          .filter((callbackhandler) => {
-            return callbackWeakMap.get(callbackhandler)?.has(prop);
-          })
-          .forEach((handler) => handler?.());
+          callbackWeakMap
+            .keys()
+            .filter((callbackhandler) => {
+              return callbackWeakMap.get(callbackhandler)?.has(prop);
+            })
+            .forEach((handler) => handler?.());
+        }
 
         return result;
       },
       get(target, p, receiver) {
         const curCallBack = globalStore.curCallBack;
-        console.log('--------fgylog get!!', target, p, receiver);
         if (curCallBack) {
           const linsenSet =
             callbackWeakMap.get(curCallBack) || new Set<string | Symbol>();
@@ -50,8 +53,9 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
           linsenSet.add(p);
 
           callbackWeakMap.set(curCallBack, linsenSet);
-
-          console.log('--------linsenSet', Array.from(linsenSet));
+          addClearCallbackArray(curCallBack, () => {
+            callbackWeakMap.delete(curCallBack);
+          });
         }
         return Reflect.get(target, p, receiver);
       },
