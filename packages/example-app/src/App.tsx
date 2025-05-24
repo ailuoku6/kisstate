@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg';
 
 import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
+import React, { useEffect } from 'react';
 
 @ObservableClass
 class User {
@@ -18,9 +19,19 @@ class User {
     console.log('agechange', this, this.age);
   }
 
-  @watchProps<User>('name')
+  @watchProps<User>('name', 'age', 'nextAge')
   onNameChange() {
-    console.log('namechange', this.name);
+    console.log('namechange or age', this.name, this.age, this.nextAge);
+  }
+
+  @watchProps<User>('nextAge')
+  onNextAgeChange() {
+    console.log('next age change', this.nextAge);
+  }
+
+  @watchProps<User>('nextnextAge')
+  onNextNextAgeChange() {
+    console.log('nextnext age change', this.nextnextAge);
   }
 
   @computed<User>('age')
@@ -34,35 +45,55 @@ class User {
   }
 
   @computed<User>('name')
-  get fullName() {
+  get say() {
     return 'hey ' + this.name;
   }
 }
 
 const user = new User();
 
-function App() {
+window.userStore = user;
+
+const Child = observer(() => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => user.age++}>age is {user.age}</button>
-        <p>next is {user.nextAge}</p>
-        <p>nextnextage {user.nextnextAge}</p>
-        <p>say {user.fullName}</p>
-      </div>
-    </>
+    <div>
+      <p>child: cur age is {user.age}</p>
+    </div>
   );
+});
+
+class AppClass extends React.Component {
+  render(): React.ReactNode {
+    return (
+      <>
+        <div>
+          <a href="https://vite.dev" target="_blank">
+            <img src={viteLogo} className="logo" alt="Vite logo" />
+          </a>
+          <a href="https://react.dev" target="_blank">
+            <img src={reactLogo} className="logo react" alt="React logo" />
+          </a>
+        </div>
+        <h1>Vite + React + Kisstate !</h1>
+        <div className="card">
+          <button onClick={() => user.age++}>age is {user.age}</button>
+          <p>next age is {user.nextAge}</p>
+          <p>next next age is {user.nextnextAge}</p>
+          name:{' '}
+          <input
+            value={user.name}
+            onChange={(e) => {
+              user.name = e.target.value;
+            }}
+          ></input>
+          <p>say: {user.say}</p>
+        </div>
+        {user.age < 10 && <Child />}
+      </>
+    );
+  }
 }
 
-const HocApp = observer(App, user);
+const HocApp = observer(AppClass);
 
 export default HocApp;
