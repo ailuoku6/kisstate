@@ -103,12 +103,12 @@ class AppClass extends React.Component {
         </div>
         <h1>Vite + React</h1>
         <div className="card">
-          <button onClick={() => user.age++}>age is {user.age}</button>
+          {/* <button onClick={() => user.age++}>age is {user.age}</button> */}
           <p>next is {user.nextAge}</p>
           <p>nextnextage {user.nextnextAge}</p>
           <p>say {user.fullName}</p>
         </div>
-        {user.age < 10 && <Child />}
+        {/* {user.age < 10 && <Child />} */}
       </>
     );
   }

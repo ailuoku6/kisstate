@@ -14,6 +14,8 @@ type WatchFnType = {
   deps: string[];
 };
 
+type CallbackMapType = Map<Function, Set<string | Symbol>>;
+
 const execEffect = (self: any) => {
   const handlers = renderEffctWeakMap.get(self) || [];
   handlers.forEach((handler) => handler());
@@ -33,7 +35,12 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     // 正确使用 new 调用原始构造函数
     const instance = new Constructor_(...args);
 
-    const callbackMap = new Map<Function, Set<string | Symbol>>();
+    const callbackMap: CallbackMapType = new Map<
+      Function,
+      Set<string | Symbol>
+    >();
+
+    (instance as any).__callbackMap__ = callbackMap;
 
     // 创建代理对象
     const proxy = new Proxy(instance, {
@@ -157,7 +164,15 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
           isDirty = true;
           cache = originFn.call(self);
           isDirty = false;
+
+          // 触发computed副作用
           execEffect(self);
+          const callbackMap = self.__callbackMap__ as CallbackMapType;
+          (callbackMap?.keys() || [])
+            .filter((callbackhandler) => {
+              return callbackMap.get(callbackhandler)?.has(methodName);
+            })
+            .forEach((handler) => handler?.());
         }
       };
       pushEffect(self, handleEffect);
