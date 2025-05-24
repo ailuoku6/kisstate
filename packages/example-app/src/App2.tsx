@@ -1,40 +1,37 @@
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 
-import { ObservableClass, watchProps, observer, computed } from 'kisstate';
+import { makeAutoObservable } from 'mobx';
+import { observer } from 'mobx-react';
 import './App.css';
 import { useEffect } from 'react';
 
-@ObservableClass
 class User {
   name = 'jude';
   age = 26;
+  subage = 12;
 
   constructor() {
+    makeAutoObservable(this);
     this.age = 17;
   }
 
-  @watchProps<User>('age')
   onAgeChange() {
     console.log('agechange', this, this.age);
   }
 
-  @watchProps<User>('name')
   onNameChange() {
     console.log('namechange', this.name);
   }
 
-  @computed<User>('age')
   get nextAge() {
     return this.age + 1;
   }
 
-  @computed<User>('nextAge')
   get nextnextAge() {
     return this.nextAge + 1;
   }
 
-  @computed<User>('name')
   get fullName() {
     return 'hey ' + this.name;
   }
@@ -44,13 +41,13 @@ const user = new User();
 
 window.userStore = user;
 
-const Child = observer(() => {
+const Child = () => {
   return (
     <div>
-      <p>child: cur age is {user.age}</p>
+      <p>child next is {user.subage}</p>
     </div>
   );
-});
+};
 
 function App(props: any) {
   console.log('-----------fgylog appprops', props);
@@ -69,10 +66,10 @@ function App(props: any) {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        {/* <button onClick={() => user.age++}>age is {user.age}</button>
+        <button onClick={() => user.age++}>age is {user.age}</button>
         <p>next is {user.nextAge}</p>
         <p>nextnextage {user.nextnextAge}</p>
-        <p>say {user.fullName}</p> */}
+        <p>say {user.fullName}</p>
       </div>
       {true && <Child />}
     </>

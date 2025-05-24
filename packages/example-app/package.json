@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "kisstate": "1.0.3",
+    "kisstate": "workspace: *",
+    "mobx": "^6.13.7",
+    "mobx-react": "^9.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

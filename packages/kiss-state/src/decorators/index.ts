@@ -1,4 +1,4 @@
-import { renderEffctWeakMap } from '../store';
+import { renderEffctWeakMap, globalStore } from '../store';
 
 // 类型定义
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -17,21 +17,46 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     // 正确使用 new 调用原始构造函数
     const instance = new Constructor_(...args);
 
+    const callbackWeakMap = new Map<Function, Set<string | Symbol>>();
+
     // 创建代理对象
     const proxy = new Proxy(instance, {
       set: (target, prop: string, value) => {
         // const oldValue = Reflect.get(target, prop);
-        const result = Reflect.set(target, prop, value);
+        console.log('--------fgylog set!!', target, prop);
 
+        const result = Reflect.set(target, prop, value);
         // 触发所有监听回调
         const handlers = renderEffctWeakMap.get(proxy) || [];
         handlers.forEach((handler) => handler());
 
+        // TODO: 避免内存泄漏
+        callbackWeakMap
+          .keys()
+          .filter((callbackhandler) => {
+            return callbackWeakMap.get(callbackhandler)?.has(prop);
+          })
+          .forEach((handler) => handler?.());
+
         return result;
+      },
+      get(target, p, receiver) {
+        const curCallBack = globalStore.curCallBack;
+        console.log('--------fgylog get!!', target, p, receiver);
+        if (curCallBack) {
+          const linsenSet =
+            callbackWeakMap.get(curCallBack) || new Set<string | Symbol>();
+
+          linsenSet.add(p);
+
+          callbackWeakMap.set(curCallBack, linsenSet);
+
+          console.log('--------linsenSet', Array.from(linsenSet));
+        }
+        return Reflect.get(target, p, receiver);
       },
     });
 
-    // proxyMap.set(this, proxy); // 缓存原始实例与代理的关系
     const watchFns = Constructor_.prototype.__watchFns || [];
 
     const self: any = proxy;
