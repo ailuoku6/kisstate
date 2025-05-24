@@ -2,6 +2,7 @@ import {
   renderEffctWeakMap,
   globalStore,
   addClearCallbackArray,
+  EffectCallback,
 } from '../store';
 
 // 类型定义
@@ -11,6 +12,17 @@ type PropertyKeyOf<T> = keyof T & string;
 type WatchFnType = {
   methodName: string;
   deps: string[];
+};
+
+const execEffect = (self: any) => {
+  const handlers = renderEffctWeakMap.get(self) || [];
+  handlers.forEach((handler) => handler());
+};
+
+const pushEffect = (self: any, handleEffect: EffectCallback) => {
+  const handlers = renderEffctWeakMap.get(self) || [];
+  handlers.push(handleEffect);
+  renderEffctWeakMap.set(self, handlers);
 };
 
 // 类装饰器：使类变为可观察对象
@@ -31,8 +43,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
         const hasChange = oldValue !== value;
         if (hasChange) {
           // 触发所有监听回调
-          const handlers = renderEffctWeakMap.get(proxy) || [];
-          handlers.forEach((handler) => handler());
+          execEffect(proxy);
 
           callbackMap
             .keys()
@@ -68,23 +79,21 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     watchFns.forEach((watchFn: WatchFnType) => {
       let cacheValue: any[] = [];
       const handler = () => {
-        const newValue = watchFn.deps.map((key) => self[key]);
-        const hasDiff = newValue.some(
-          (value, index) => value !== cacheValue[index],
-        );
-        cacheValue = newValue;
-        if (hasDiff) {
-          self[watchFn.methodName]?.();
-        }
+        // 副作用的执行放宏任务里，防止链式computed依赖多次触发
+        setTimeout(() => {
+          const newValue = watchFn.deps.map((key) => self[key]);
+          const hasDiff = newValue.some(
+            (value, index) => value !== cacheValue[index],
+          );
+          cacheValue = newValue;
+          if (hasDiff) {
+            self[watchFn.methodName]?.();
+          }
+        }, 0);
       };
-      const handlers = renderEffctWeakMap.get(proxy) || [];
-
-      handlers.push(handler);
-      renderEffctWeakMap.set(proxy, handlers);
+      pushEffect(proxy, handler);
     });
-
-    const handlers = renderEffctWeakMap.get(proxy) || [];
-    handlers.forEach((handler) => handler());
+    execEffect(proxy);
     return proxy; // 替换为代理对象
   };
 
@@ -148,14 +157,10 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
           isDirty = true;
           cache = originFn.call(self);
           isDirty = false;
-          const handlers = renderEffctWeakMap.get(self) || [];
-          handlers.forEach((handler) => handler());
+          execEffect(self);
         }
       };
-
-      const handlers = renderEffctWeakMap.get(self) || [];
-      handlers.push(handleEffect);
-      renderEffctWeakMap.set(self, handlers);
+      pushEffect(self, handleEffect);
     };
 
     descriptor.get = function () {

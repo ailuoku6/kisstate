@@ -19,9 +19,9 @@ class User {
     console.log('agechange', this, this.age);
   }
 
-  @watchProps<User>('name')
+  @watchProps<User>('name', 'age', 'nextAge')
   onNameChange() {
-    console.log('namechange', this.name);
+    console.log('namechange or age', this.name, this.age, this.nextAge);
   }
 
   @watchProps<User>('nextAge')
