@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-
 import { cleanTrack, trackFun } from '../store';
+
+export type IReactComponent<P = any> =
+  | React.ComponentClass<P>
+  | React.FunctionComponent<P>
+  | React.ForwardRefExoticComponent<P>
+  | React.Component<P>;
 
 const useForceRender = () => {
   const [, setTick] = useState(0);
@@ -11,7 +16,10 @@ const useForceRender = () => {
   return forceRender;
 };
 
-export const observer = (Comp: any, ...stores: any[]) => {
+/**
+ * 使用此高阶函数包裹组件，使组件自动订阅kisstate状态更新
+ */
+export function observer<T extends IReactComponent>(Comp: T) {
   const Hoc = (props: any) => {
     const forceRender = useForceRender();
 
@@ -22,10 +30,13 @@ export const observer = (Comp: any, ...stores: any[]) => {
     const render = useMemo(() => {
       if (!isClassComp) {
         return (props: any) => {
-          return trackFun(() => Comp(props), forceRender);
+          return trackFun(
+            () => (Comp as React.FunctionComponent)(props),
+            forceRender,
+          );
         };
       }
-      const ClassComp = Comp as React.ComponentClass<any, any>;
+      const ClassComp = Comp as React.ComponentClass<T, any>;
 
       const { prototype } = ClassComp;
 
@@ -61,5 +72,5 @@ export const observer = (Comp: any, ...stores: any[]) => {
     return comp;
   };
 
-  return Hoc;
-};
+  return Hoc as T;
+}

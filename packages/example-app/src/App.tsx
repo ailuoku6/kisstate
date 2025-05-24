@@ -3,7 +3,7 @@ import viteLogo from '/vite.svg';
 
 import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 @ObservableClass
 class User {

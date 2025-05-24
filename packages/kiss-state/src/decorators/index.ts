@@ -38,7 +38,18 @@ const pushEffect = (self: any, handleEffect: EffectCallback) => {
   innerEffctWeakMap.set(self, handlers);
 };
 
-// 类装饰器：使类变为可观察对象
+/**
+ * 类装饰器：使类变为可观察对象
+ * @example
+ * ```
+ * @ObservableClass
+ * class User {
+ *   name = 'jude';
+ *   age = 26;
+ *   constructor() {}
+ * }
+ * ```
+ */
 export function ObservableClass<T extends new (...args: any[]) => object>(
   Constructor_: T,
 ) {
@@ -119,7 +130,10 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
   return NewConstructor as unknown as T;
 }
 
-// 装饰器工厂：强约束属性名必须是目标类的属性
+/**
+ * 副作用函数装饰器，属性变化时触发副作用执行
+ * @example ```@watchProps<User>('age', 'name', 'nextAge')```
+ */
 export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
   return function <C extends T>(
     target: C,
@@ -140,6 +154,10 @@ export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
   };
 }
 
+/**
+ * computed 属性装饰器，依赖的属性发生变化，则触发此getter重新执行，否则返回cache结果
+ * @example ```@watchProps<User>('age')```
+ */
 export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
   return function <C extends T>(
     target: C,
