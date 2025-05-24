@@ -77,8 +77,8 @@ class AppClass extends React.Component {
         <h1>Vite + React + Kisstate !</h1>
         <div className="card">
           <button onClick={() => user.age++}>age is {user.age}</button>
-          <p>next is {user.nextAge}</p>
-          <p>nextnextage {user.nextnextAge}</p>
+          <p>next age is {user.nextAge}</p>
+          <p>next next age is {user.nextnextAge}</p>
           name:{' '}
           <input
             value={user.name}
