@@ -1,5 +1,5 @@
 export type EffectCallback = () => void;
-export declare const renderEffctWeakMap: WeakMap<object, EffectCallback[]>;
+export declare const innerEffctWeakMap: WeakMap<object, EffectCallback[]>;
 export declare const clearCallbacks: WeakMap<Function, Function[]>;
 export declare const globalStore: {
     curCallBack: Function | null;

@@ -45,7 +45,7 @@ class User {
   }
 
   @computed<User>('name')
-  get fullName() {
+  get say() {
     return 'hey ' + this.name;
   }
 }
@@ -62,33 +62,6 @@ const Child = observer(() => {
   );
 });
 
-function App(props: any) {
-  console.log('-----------fgylog appprops', props);
-  useEffect(() => {
-    console.log('-----------fgylog effect');
-  }, []);
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => user.age++}>age is {user.age}</button>
-        <p>next is {user.nextAge}</p>
-        <p>nextnextage {user.nextnextAge}</p>
-        <p>say {user.fullName}</p>
-      </div>
-      {true && <Child />}
-    </>
-  );
-}
-
 class AppClass extends React.Component {
   render(): React.ReactNode {
     return (
@@ -101,12 +74,19 @@ class AppClass extends React.Component {
             <img src={reactLogo} className="logo react" alt="React logo" />
           </a>
         </div>
-        <h1>Vite + React</h1>
+        <h1>Vite + React + Kisstate !</h1>
         <div className="card">
           <button onClick={() => user.age++}>age is {user.age}</button>
           <p>next is {user.nextAge}</p>
           <p>nextnextage {user.nextnextAge}</p>
-          <p>say {user.fullName}</p>
+          name:{' '}
+          <input
+            value={user.name}
+            onChange={(e) => {
+              user.name = e.target.value;
+            }}
+          ></input>
+          <p>say: {user.say}</p>
         </div>
         {user.age < 10 && <Child />}
       </>

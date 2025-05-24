@@ -1,5 +1,5 @@
 import {
-  renderEffctWeakMap,
+  innerEffctWeakMap,
   globalStore,
   addClearCallbackArray,
   EffectCallback,
@@ -17,7 +17,7 @@ type WatchFnType = {
 type CallbackMapType = Map<Function, Set<string | Symbol>>;
 
 const execEffect = (self: any) => {
-  const handlers = renderEffctWeakMap.get(self) || [];
+  const handlers = innerEffctWeakMap.get(self) || [];
   handlers.forEach((handler) => handler());
 };
 
@@ -33,9 +33,9 @@ const execCallbackByPropName = (
 };
 
 const pushEffect = (self: any, handleEffect: EffectCallback) => {
-  const handlers = renderEffctWeakMap.get(self) || [];
+  const handlers = innerEffctWeakMap.get(self) || [];
   handlers.push(handleEffect);
-  renderEffctWeakMap.set(self, handlers);
+  innerEffctWeakMap.set(self, handlers);
 };
 
 // 类装饰器：使类变为可观察对象
