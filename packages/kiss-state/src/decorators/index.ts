@@ -84,7 +84,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
       },
     });
 
-    const watchFns = Constructor_.prototype.__watchFns || [];
+    const watchFns = Constructor_.prototype.__watchFns__ || [];
 
     const self: any = proxy;
 
@@ -127,16 +127,16 @@ export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
     descriptor: PropertyDescriptor,
   ) {
     if (typeof descriptor.value !== 'function') {
-      throw new Error('@WatchProps 只能装饰方法');
+      throw new Error('@WatchProps can only decorate methods');
     }
 
-    const watchFns = (target as any).__watchFns || [];
+    const watchFns = (target as any).__watchFns__ || [];
     watchFns.push({
       methodName,
       deps: props,
     });
 
-    (target as any).__watchFns = watchFns;
+    (target as any).__watchFns__ = watchFns;
   };
 }
 
@@ -147,7 +147,7 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
     descriptor: PropertyDescriptor,
   ) {
     if (typeof descriptor.get !== 'function') {
-      throw new Error('@computed 只能装饰方法');
+      throw new Error('@computed can only decorate methods');
     }
 
     const originFn = descriptor.get;
@@ -172,8 +172,10 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
 
           // 触发computed副作用
           execEffect(self);
-          const callbackMap = self.__callbackMap__ as CallbackMapType;
-          execCallbackByPropName(callbackMap, methodName);
+          execCallbackByPropName(
+            self.__callbackMap__ as CallbackMapType,
+            methodName,
+          );
         }
       };
       pushEffect(self, handleEffect);
