@@ -81,7 +81,7 @@ get nextnextAge() {
 使用 `observer` HOC 连接 React 组件：
 
 ```typescript
-const HocApp = observer(App, user);
+const HocApp = observer(App);
 ```
 
 ---
@@ -136,7 +136,7 @@ function App() {
 }
 
 // 6. 绑定状态观察
-export default observer(App, user);
+export default observer(App);
 ```
 
 ---

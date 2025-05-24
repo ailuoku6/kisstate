@@ -79,7 +79,7 @@ get nextnextAge() {
 Connect React components using `observer` HOC:
 
 ```typescript
-const HocApp = observer(App, user);
+const HocApp = observer(App);
 ```
 
 ---
@@ -134,7 +134,7 @@ function App() {
 }
 
 // 6. Bind state observation
-export default observer(App, user);
+export default observer(App);
 ```
 
 ---

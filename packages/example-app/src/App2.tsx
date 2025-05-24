@@ -1,50 +1,37 @@
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 
-import { ObservableClass, watchProps, observer, computed } from 'kisstate';
+import { makeAutoObservable } from 'mobx';
+import { observer } from 'mobx-react';
 import './App.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 
-@ObservableClass
 class User {
   name = 'jude';
   age = 26;
+  subage = 12;
 
   constructor() {
+    makeAutoObservable(this);
     this.age = 17;
   }
 
-  @watchProps<User>('age')
   onAgeChange() {
     console.log('agechange', this, this.age);
   }
 
-  @watchProps<User>('name', 'age', 'nextAge')
   onNameChange() {
-    console.log('namechange or age', this.name, this.age, this.nextAge);
+    console.log('namechange', this.name);
   }
 
-  @watchProps<User>('nextAge')
-  onNextAgeChange() {
-    console.log('next age change', this.nextAge);
-  }
-
-  @watchProps<User>('nextnextAge')
-  onNextNextAgeChange() {
-    console.log('nextnext age change', this.nextnextAge);
-  }
-
-  @computed<User>('age')
   get nextAge() {
     return this.age + 1;
   }
 
-  @computed<User>('nextAge')
   get nextnextAge() {
     return this.nextAge + 1;
   }
 
-  @computed<User>('name')
   get say() {
     return 'hey ' + this.name;
   }
@@ -54,13 +41,13 @@ const user = new User();
 
 window.userStore = user;
 
-const Child = observer(() => {
+const Child = () => {
   return (
     <div>
-      <p>child: cur age is {user.age}</p>
+      <p>child next is {user.subage}</p>
     </div>
   );
-});
+};
 
 class AppClass extends React.Component {
   render(): React.ReactNode {
