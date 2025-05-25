@@ -10,6 +10,7 @@ class User {
   name = 'jude';
   age = 26;
   subage = 12;
+  //   obj = {};
 
   constructor() {
     makeAutoObservable(this);

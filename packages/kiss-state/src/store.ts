@@ -25,7 +25,18 @@ export const cleanTrack = (callbackFn: Function) => {
 export const trackFun = (fn: Function, callback: Function) => {
   const preCallback = globalStore.curCallBack;
   globalStore.curCallBack = callback;
-  const res = fn();
-  globalStore.curCallBack = preCallback;
+  let res = null;
+  let error = null;
+  try {
+    res = fn();
+  } catch (err) {
+    error = err;
+    cleanTrack(callback);
+  } finally {
+    globalStore.curCallBack = preCallback;
+  }
+  if (error) {
+    throw error;
+  }
   return res;
 };

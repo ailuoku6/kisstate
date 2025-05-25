@@ -62,7 +62,6 @@ export function observer<T extends IReactComponent>(Comp: T) {
       comp = render(props);
     } catch (err) {
       throwErr = err;
-    } finally {
     }
 
     if (throwErr) {

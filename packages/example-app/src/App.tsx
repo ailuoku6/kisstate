@@ -9,6 +9,7 @@ import React from 'react';
 class User {
   name = 'jude';
   age = 26;
+  obj = {};
 
   constructor() {
     this.age = 17;
@@ -63,6 +64,13 @@ const Child = observer(() => {
 });
 
 class AppClass extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      num: 1,
+    };
+  }
+
   render(): React.ReactNode {
     return (
       <>
@@ -77,6 +85,13 @@ class AppClass extends React.Component {
         <h1>Vite + React + Kisstate !</h1>
         <div className="card">
           <button onClick={() => user.age++}>age is {user.age}</button>
+          <button
+            onClick={() => {
+              this.setState({ num: this.state.num + 1 });
+            }}
+          >
+            num is {this.state.num}
+          </button>
           <p>next age is {user.nextAge}</p>
           <p>next next age is {user.nextnextAge}</p>
           name:{' '}
