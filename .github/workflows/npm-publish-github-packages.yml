@@ -20,5 +20,4 @@ jobs:
           node-version: 20
       - run: npm i -g pnpm@10.6.3
       - run: pnpm i
-      - run: cd packages/kiss-state
-      - run: pnpm run roll-build
+      - run: cd packages/kiss-state && pnpm run roll-build
