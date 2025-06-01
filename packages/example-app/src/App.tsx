@@ -3,13 +3,14 @@ import viteLogo from '/vite.svg';
 
 import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
-import React from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 @ObservableClass
 class User {
   name = 'jude';
   age = 26;
   obj = {};
+  testStr = 'test';
 
   constructor() {
     this.age = 17;
@@ -55,13 +56,54 @@ const user = new User();
 
 window.userStore = user;
 
-const Child = observer(() => {
-  return (
-    <div>
-      <p>child: cur age is {user.age}</p>
-    </div>
-  );
-});
+const Child = observer(
+  forwardRef((_props, ref) => {
+    const [num, setNum] = useState(1);
+    useImperativeHandle(
+      ref,
+      () => ({
+        childFun: () => {
+          console.log('-----------childFun call', num);
+          setNum((n) => n + 1);
+        },
+      }),
+      [num],
+    );
+    return (
+      <div>
+        <p>child: cur age is {user.age}</p>
+        <p>child: num is {num}</p>
+        <p>child: testStr is {user.testStr}</p>
+      </div>
+    );
+  }),
+);
+
+class ClassChild extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      num: 1,
+    };
+  }
+
+  classChildFun() {
+    console.log('-----------classChildFun call', this.state);
+    this.setState({ num: this.state.num + 1 });
+  }
+
+  render(): React.ReactNode {
+    return (
+      <div>
+        ClassChild: num is {this.state.num}
+        <p>classChild: cur age is {user.age}</p>
+        <p>classChild: testStr is {user.testStr}</p>
+      </div>
+    );
+  }
+}
+
+const ClassChild2 = observer(ClassChild);
 
 class AppClass extends React.Component {
   constructor(props) {
@@ -69,6 +111,15 @@ class AppClass extends React.Component {
     this.state = {
       num: 1,
     };
+    this.childRef = React.createRef<typeof Child>();
+    this.classChildRef = React.createRef();
+  }
+
+  componentDidMount(): void {
+    console.log('----------childRef', this.childRef);
+    console.log('----------classChildRef', this.classChildRef);
+    this.childRef.current?.childFun();
+    this.classChildRef.current?.classChildFun();
   }
 
   render(): React.ReactNode {
@@ -103,7 +154,22 @@ class AppClass extends React.Component {
           ></input>
           <p>say: {user.say}</p>
         </div>
-        {user.age < 10 && <Child />}
+        <button
+          onClick={() => {
+            this.childRef.current?.childFun();
+          }}
+        >
+          child click
+        </button>
+        <Child ref={this.childRef} />
+        <button
+          onClick={() => {
+            this.classChildRef.current?.classChildFun();
+          }}
+        >
+          classChild click
+        </button>
+        <ClassChild2 ref={this.classChildRef} />
       </>
     );
   }
