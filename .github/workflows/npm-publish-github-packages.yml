@@ -21,3 +21,6 @@ jobs:
       - run: npm i -g pnpm@10.6.3
       - run: pnpm i
       - run: cd packages/kiss-state && pnpm run roll-build
+      - run: cd packages/kiss-state && npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
