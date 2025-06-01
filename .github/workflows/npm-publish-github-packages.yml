@@ -23,4 +23,4 @@ jobs:
       - run: cd packages/kiss-state && pnpm run roll-build
       - run: cd packages/kiss-state && npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
