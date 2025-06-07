@@ -6,8 +6,13 @@ import {
 } from '../store';
 
 // 类型定义
-type Constructor<T = object> = new (...args: any[]) => T;
-type PropertyKeyOf<T> = keyof T & string;
+// type Constructor<T = object> = new (...args: any[]) => T;
+
+type NonMethodKeys<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K;
+}[keyof T];
+
+type PropertyKeyOf<T> = NonMethodKeys<T> & string;
 
 type WatchFnType = {
   methodName: string;
@@ -132,11 +137,11 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
 
 /**
  * 副作用函数装饰器，属性变化时触发副作用执行
- * @example ```@watchProps<User>('age', 'name', 'nextAge')```
+ * @example ```@watchProps('age', 'name', 'nextAge')```
  */
 export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
-  return function <C extends T>(
-    target: C,
+  return function (
+    target: T,
     methodName: string,
     descriptor: PropertyDescriptor,
   ) {
@@ -156,11 +161,11 @@ export function watchProps<T extends object>(...props: PropertyKeyOf<T>[]) {
 
 /**
  * computed 属性装饰器，依赖的属性发生变化，则触发此getter重新执行，否则返回cache结果
- * @example ```@watchProps<User>('age')```
+ * @example ```@watchProps('age')```
  */
 export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
-  return function <C extends T>(
-    target: C,
+  return function (
+    _target: T,
     methodName: string,
     descriptor: PropertyDescriptor,
   ) {

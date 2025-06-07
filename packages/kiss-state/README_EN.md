@@ -47,12 +47,12 @@ class User {
 Watch specific property changes with `@watchProps`:
 
 ```typescript
-@watchProps<User>('age')
+@watchProps('age')
 onAgeChange() {
   console.log('age changed:', this.age);
 }
 
-@watchProps<User>('name')
+@watchProps('name')
 onNameChange() {
   console.log('name changed:', this.name);
 }
@@ -63,12 +63,12 @@ onNameChange() {
 Declare auto-updating computed properties with `@computed`:
 
 ```typescript
-@computed<User>('age')
+@computed('age')
 get nextAge() {
   return this.age + 1;
 }
 
-@computed<User>('nextAge')
+@computed('nextAge')
 get nextnextAge() {
   return this.nextAge + 1;
 }
@@ -100,18 +100,18 @@ class User {
   }
 
   // 2. Property change observation
-  @watchProps<User>('age')
+  @watchProps('age')
   onAgeChange() {
     console.log('Age changed:', this.age);
   }
 
   // 3. Computed properties
-  @computed<User>('age')
+  @computed('age')
   get nextAge() {
     return this.age + 1;
   }
 
-  @computed<User>('nextAge')
+  @computed('nextAge')
   get nextnextAge() {
     return this.nextAge + 1;
   }
