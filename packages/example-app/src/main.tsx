@@ -4,7 +4,7 @@ import './index.css';
 import App from './App.tsx';
 // import App from './App2';
 
-const Wrap = Fragment;
+const Wrap = StrictMode;
 
 createRoot(document.getElementById('root')!).render(
   <Wrap>

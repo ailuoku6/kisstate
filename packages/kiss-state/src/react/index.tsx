@@ -42,8 +42,20 @@ export function observer<T extends IReactComponent>(Comp: T) {
   const isClassComp = isClassComponent(Comp);
   const isForward = isForwardRef(Comp);
 
+  const componentName = (Comp as any).displayName || (Comp as any).name;
+
   const Hoc = (props: any, ref: ForwardedRef<T>) => {
     const forceRender = useForceRender();
+    const [_, setIsMounted] = useState(false);
+
+    // 兼容react严格模式
+    useEffect(() => {
+      setIsMounted(true);
+      return () => {
+        setIsMounted(false);
+        cleanTrack(forceRender);
+      };
+    }, [forceRender]);
 
     const render = useMemo(() => {
       if (!isClassComp) {
@@ -67,24 +79,17 @@ export function observer<T extends IReactComponent>(Comp: T) {
           );
         };
       }
+
       const ClassComp = Comp as React.ComponentClass<T, any>;
-
-      const { prototype } = ClassComp;
-
-      const originalRender = prototype.render;
+      const { prototype = {} } = ClassComp || {};
+      const classOriginalRender = prototype.render;
 
       prototype.render = function () {
-        return trackFun(originalRender.bind(this), forceRender);
+        return trackFun(classOriginalRender.bind(this), forceRender);
       };
 
       return (props: any) => <ClassComp {...props} />;
     }, [Comp, isClassComp, isForward, forceRender]);
-
-    useEffect(() => {
-      return () => {
-        cleanTrack(forceRender);
-      };
-    }, [forceRender]);
 
     let comp = null;
     let throwErr = null;
@@ -103,6 +108,8 @@ export function observer<T extends IReactComponent>(Comp: T) {
   };
 
   const FinalHoc = isClassComp || !isForward ? Hoc : forwardRef(Hoc);
+
+  (FinalHoc as any).displayName = componentName;
 
   return FinalHoc as T;
 }
