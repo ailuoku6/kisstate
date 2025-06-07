@@ -49,12 +49,12 @@ class User {
 使用 `@watchProps` 监听特定属性变化：
 
 ```typescript
-@watchProps<User>('age')
+@watchProps('age')
 onAgeChange() {
   console.log('age changed:', this.age);
 }
 
-@watchProps<User>('name')
+@watchProps('name')
 onNameChange() {
   console.log('name changed:', this.name);
 }
@@ -65,12 +65,12 @@ onNameChange() {
 使用 `@computed` 声明自动更新的计算属性：
 
 ```typescript
-@computed<User>('age')
+@computed('age')
 get nextAge() {
   return this.age + 1;
 }
 
-@computed<User>('nextAge')
+@computed('nextAge')
 get nextnextAge() {
   return this.nextAge + 1;
 }
@@ -102,18 +102,18 @@ class User {
   }
 
   // 2. 属性变化监听
-  @watchProps<User>('age')
+  @watchProps('age')
   onAgeChange() {
     console.log('Age changed:', this.age);
   }
 
   // 3. 计算属性
-  @computed<User>('age')
+  @computed('age')
   get nextAge() {
     return this.age + 1;
   }
 
-  @computed<User>('nextAge')
+  @computed('nextAge')
   get nextnextAge() {
     return this.nextAge + 1;
   }

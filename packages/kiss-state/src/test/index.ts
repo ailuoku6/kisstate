@@ -1,4 +1,4 @@
-import { ObservableClass, watchProps } from '../decorators';
+import { ObservableClass, watchProps, computed } from '../decorators';
 
 @ObservableClass
 class User {
@@ -11,9 +11,14 @@ class User {
     this.age = 17;
   }
 
-  @watchProps<User>('age', 'name')
+  @watchProps('age', 'age2')
   onAgeChange() {
     console.log('---------agechange', this.age);
+  }
+
+  @computed('age', 'name')
+  get age2() {
+    return this.age + 1;
   }
 }
 

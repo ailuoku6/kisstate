@@ -3,7 +3,12 @@ import viteLogo from '/vite.svg';
 
 import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 import './App.css';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 
 @ObservableClass
 class User {
@@ -11,42 +16,47 @@ class User {
   age = 26;
   obj = {};
   testStr = 'test';
+  testNum = 1;
 
   constructor() {
     this.age = 17;
   }
 
-  @watchProps<User>('age')
+  fun() {
+
+  }
+
+  @watchProps('age')
   onAgeChange() {
     console.log('agechange', this, this.age);
   }
 
-  @watchProps<User>('name', 'age', 'nextAge')
+  @watchProps('name', 'age', 'nextAge')
   onNameChange() {
     console.log('namechange or age', this.name, this.age, this.nextAge);
   }
 
-  @watchProps<User>('nextAge')
+  @watchProps('nextAge')
   onNextAgeChange() {
     console.log('next age change', this.nextAge);
   }
 
-  @watchProps<User>('nextnextAge')
+  @watchProps('nextnextAge')
   onNextNextAgeChange() {
     console.log('nextnext age change', this.nextnextAge);
   }
 
-  @computed<User>('age')
+  @computed('age')
   get nextAge() {
     return this.age + 1;
   }
 
-  @computed<User>('nextAge')
+  @computed('nextAge')
   get nextnextAge() {
     return this.nextAge + 1;
   }
 
-  @computed<User>('name')
+  @computed('name')
   get say() {
     return 'hey ' + this.name;
   }
@@ -57,8 +67,11 @@ const user = new User();
 window.userStore = user;
 
 const Child = observer(
-  forwardRef((_props, ref) => {
+  forwardRef<{ childFun: () => void }>((_props, ref) => {
     const [num, setNum] = useState(1);
+    useEffect(() => {
+      console.log('--------------childFun1', user.testNum);
+    }, [user.testNum]);
     useImperativeHandle(
       ref,
       () => ({
@@ -78,6 +91,13 @@ const Child = observer(
     );
   }),
 );
+
+const FunChild = observer(() => {
+  useEffect(() => {
+    console.log('----------FunChild', user.testNum);
+  }, [user.testNum]);
+  return <div>FunChild</div>;
+});
 
 class ClassChild extends React.Component {
   constructor(props) {
@@ -170,6 +190,8 @@ class AppClass extends React.Component {
           classChild click
         </button>
         <ClassChild2 ref={this.classChildRef} />
+
+        <FunChild />
       </>
     );
   }

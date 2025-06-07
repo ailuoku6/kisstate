@@ -15,6 +15,11 @@ const isForwardRef = (Component: any) => {
   );
 };
 
+const isClassComponent = (Comp: any) => {
+  return Object.prototype.isPrototypeOf.call(React.Component, Comp) ||
+    Object.prototype.isPrototypeOf.call(React.PureComponent, Comp);
+}
+
 export type IReactComponent<P = any> =
   | React.ComponentClass<P>
   | React.FunctionComponent<P>
@@ -34,10 +39,7 @@ const useForceRender = () => {
  * 使用此高阶函数包裹组件，使组件自动订阅kisstate状态更新
  */
 export function observer<T extends IReactComponent>(Comp: T) {
-  const isClassComp =
-    Object.prototype.isPrototypeOf.call(React.Component, Comp) ||
-    Object.prototype.isPrototypeOf.call(React.PureComponent, Comp);
-
+  const isClassComp = isClassComponent(Comp);
   const isForward = isForwardRef(Comp);
 
   const Hoc = (props: any, ref: ForwardedRef<T>) => {
