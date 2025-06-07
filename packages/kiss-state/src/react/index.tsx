@@ -91,20 +91,7 @@ export function observer<T extends IReactComponent>(Comp: T) {
       return (props: any) => <ClassComp {...props} />;
     }, [Comp, isClassComp, isForward, forceRender]);
 
-    let comp = null;
-    let throwErr = null;
-
-    try {
-      comp = render(props, ref);
-    } catch (err) {
-      throwErr = err;
-    }
-
-    if (throwErr) {
-      throw throwErr;
-    }
-
-    return comp;
+    return render(props, ref);
   };
 
   const FinalHoc = isClassComp || !isForward ? Hoc : forwardRef(Hoc);
