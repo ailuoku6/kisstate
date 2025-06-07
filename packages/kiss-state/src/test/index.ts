@@ -11,7 +11,7 @@ class User {
     this.age = 17;
   }
 
-  @watchProps('age', 'age', 'age2')
+  @watchProps('age', 'age2')
   onAgeChange() {
     console.log('---------agechange', this.age);
   }
