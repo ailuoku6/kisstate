@@ -35,6 +35,8 @@ const useForceRender = () => {
   return forceRender;
 };
 
+const EMPTY_FUNC = () => null;
+
 /**
  * 使用此高阶函数包裹组件，使组件自动订阅kisstate状态更新
  */
@@ -43,6 +45,9 @@ export function observer<T extends IReactComponent>(Comp: T) {
   const isForward = isForwardRef(Comp);
 
   const componentName = (Comp as any).displayName || (Comp as any).name;
+
+  const originalRender = isForward ? (Comp as any).render : EMPTY_FUNC;
+  const classOriginalRender = isClassComp ? (Comp as any).prototype.render : EMPTY_FUNC;
 
   const Hoc = (props: any, ref: ForwardedRef<T>) => {
     const forceRender = useForceRender();
@@ -62,17 +67,18 @@ export function observer<T extends IReactComponent>(Comp: T) {
         if (isForward) {
           return (props: any, ref_: ForwardedRef<T>) => {
             const ForwardComp = Comp as React.ForwardRefExoticComponent<T>;
-            const originalRender = (ForwardComp as any).render;
             (ForwardComp as any).render = (
               props: any,
               ref: ForwardedRef<T>,
             ) => {
+              console.log('fgylog forward render', componentName);
               return trackFun(() => originalRender(props, ref), forceRender);
             };
             return <ForwardComp {...props} ref={ref_} />;
           };
         }
         return (props: any) => {
+          console.log('fgylog function render', componentName);
           return trackFun(
             () => (Comp as React.FunctionComponent<T>)(props),
             forceRender,
@@ -82,9 +88,9 @@ export function observer<T extends IReactComponent>(Comp: T) {
 
       const ClassComp = Comp as React.ComponentClass<T, any>;
       const { prototype = {} } = ClassComp || {};
-      const classOriginalRender = prototype.render;
 
       prototype.render = function () {
+        console.log('fgylog class render', componentName);
         return trackFun(classOriginalRender.bind(this), forceRender);
       };
 
@@ -96,7 +102,9 @@ export function observer<T extends IReactComponent>(Comp: T) {
 
   const FinalHoc = isClassComp || !isForward ? Hoc : forwardRef(Hoc);
 
-  (FinalHoc as any).displayName = componentName;
+  if (componentName) {
+    (FinalHoc as any).displayName = componentName;
+  }
 
   return FinalHoc as T;
 }
