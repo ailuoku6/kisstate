@@ -35,6 +35,8 @@ const useForceRender = () => {
   return forceRender;
 };
 
+const EMPTY_FUNC = () => null;
+
 /**
  * 使用此高阶函数包裹组件，使组件自动订阅kisstate状态更新
  */
@@ -42,15 +44,31 @@ export function observer<T extends IReactComponent>(Comp: T) {
   const isClassComp = isClassComponent(Comp);
   const isForward = isForwardRef(Comp);
 
+  const componentName = (Comp as any).displayName || (Comp as any).name;
+
+  const originalRender = isForward ? (Comp as any).render : EMPTY_FUNC;
+  const classOriginalRender = isClassComp ? (Comp as any).prototype.render : EMPTY_FUNC;
+
+  const IS_DEV = "production" !== process.env.NODE_ENV;
+
   const Hoc = (props: any, ref: ForwardedRef<T>) => {
     const forceRender = useForceRender();
+    const [_, setIsMounted] = useState(false);
+
+    // 兼容react严格模式
+    useEffect(() => {
+      IS_DEV && setIsMounted(true);
+      return () => {
+        IS_DEV && setIsMounted(false);
+        cleanTrack(forceRender);
+      };
+    }, [forceRender]);
 
     const render = useMemo(() => {
       if (!isClassComp) {
         if (isForward) {
           return (props: any, ref_: ForwardedRef<T>) => {
             const ForwardComp = Comp as React.ForwardRefExoticComponent<T>;
-            const originalRender = (ForwardComp as any).render;
             (ForwardComp as any).render = (
               props: any,
               ref: ForwardedRef<T>,
@@ -67,42 +85,25 @@ export function observer<T extends IReactComponent>(Comp: T) {
           );
         };
       }
+
       const ClassComp = Comp as React.ComponentClass<T, any>;
-
-      const { prototype } = ClassComp;
-
-      const originalRender = prototype.render;
+      const { prototype = {} } = ClassComp || {};
 
       prototype.render = function () {
-        return trackFun(originalRender.bind(this), forceRender);
+        return trackFun(classOriginalRender.bind(this), forceRender);
       };
 
       return (props: any) => <ClassComp {...props} />;
     }, [Comp, isClassComp, isForward, forceRender]);
 
-    useEffect(() => {
-      return () => {
-        cleanTrack(forceRender);
-      };
-    }, [forceRender]);
-
-    let comp = null;
-    let throwErr = null;
-
-    try {
-      comp = render(props, ref);
-    } catch (err) {
-      throwErr = err;
-    }
-
-    if (throwErr) {
-      throw throwErr;
-    }
-
-    return comp;
+    return render(props, ref);
   };
 
   const FinalHoc = isClassComp || !isForward ? Hoc : forwardRef(Hoc);
+
+  if (componentName) {
+    (FinalHoc as any).displayName = componentName;
+  }
 
   return FinalHoc as T;
 }
