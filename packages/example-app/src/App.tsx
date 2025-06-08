@@ -197,6 +197,6 @@ class AppClass extends React.Component {
   }
 }
 
-const HocApp = observer(AppClass);
+const HocApp2 = observer(AppClass);
 
-export default HocApp;
+export default HocApp2;
