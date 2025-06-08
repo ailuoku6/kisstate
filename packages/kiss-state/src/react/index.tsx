@@ -73,14 +73,12 @@ export function observer<T extends IReactComponent>(Comp: T) {
               props: any,
               ref: ForwardedRef<T>,
             ) => {
-              console.log('fgylog forward render', componentName);
               return trackFun(() => originalRender(props, ref), forceRender);
             };
             return <ForwardComp {...props} ref={ref_} />;
           };
         }
         return (props: any) => {
-          console.log('fgylog function render', componentName);
           return trackFun(
             () => (Comp as React.FunctionComponent<T>)(props),
             forceRender,
@@ -92,7 +90,6 @@ export function observer<T extends IReactComponent>(Comp: T) {
       const { prototype = {} } = ClassComp || {};
 
       prototype.render = function () {
-        console.log('fgylog class render', componentName);
         return trackFun(classOriginalRender.bind(this), forceRender);
       };
 
