@@ -5,8 +5,10 @@ import React, {
   useMemo,
   ForwardedRef,
   forwardRef,
+  useRef,
 } from 'react';
-import { cleanTrack, trackFun } from '../store';
+import { trackFun } from '../store';
+import { ITrackObj } from '../types';
 
 const isForwardRef = (Component: any) => {
   return (
@@ -35,6 +37,21 @@ const useForceRender = () => {
   return forceRender;
 };
 
+let tractId = 0;
+
+const useTrackObj = (renderFn: Function) => {
+  const trackObjRef = useRef<ITrackObj>({ fn: renderFn, id: `react-track-${tractId++}` });
+
+  useEffect(() => {
+    trackObjRef.current.fn = renderFn;
+    return () => {
+      trackObjRef.current.fn = null;
+    };
+  }, [renderFn]);
+
+  return trackObjRef.current;
+}
+
 const EMPTY_FUNC = () => null;
 
 /**
@@ -49,20 +66,22 @@ export function observer<T extends IReactComponent>(Comp: T) {
   const originalRender = isForward ? (Comp as any).render : EMPTY_FUNC;
   const classOriginalRender = isClassComp ? (Comp as any).prototype.render : EMPTY_FUNC;
 
-  const IS_DEV = "production" !== process.env.NODE_ENV;
+  // const IS_DEV = "production" !== process.env.NODE_ENV;
 
   const Hoc = (props: any, ref: ForwardedRef<T>) => {
     const forceRender = useForceRender();
-    const [_, setIsMounted] = useState(false);
+    // const [_, setIsMounted] = useState(false);
+
+    const trackObj = useTrackObj(forceRender);
 
     // 兼容react严格模式
-    useEffect(() => {
-      IS_DEV && setIsMounted(true);
-      return () => {
-        IS_DEV && setIsMounted(false);
-        cleanTrack(forceRender);
-      };
-    }, [forceRender]);
+    // useEffect(() => {
+    //   IS_DEV && setIsMounted(true);
+    //   return () => {
+    //     IS_DEV && setIsMounted(false);
+    //     cleanTrack(forceRender);
+    //   };
+    // }, [forceRender]);
 
     const render = useMemo(() => {
       if (!isClassComp) {
@@ -73,7 +92,7 @@ export function observer<T extends IReactComponent>(Comp: T) {
               props: any,
               ref: ForwardedRef<T>,
             ) => {
-              return trackFun(() => originalRender(props, ref), forceRender);
+              return trackFun(() => originalRender(props, ref), trackObj);
             };
             return <ForwardComp {...props} ref={ref_} />;
           };
@@ -81,7 +100,7 @@ export function observer<T extends IReactComponent>(Comp: T) {
         return (props: any) => {
           return trackFun(
             () => (Comp as React.FunctionComponent<T>)(props),
-            forceRender,
+            trackObj,
           );
         };
       }
@@ -90,11 +109,11 @@ export function observer<T extends IReactComponent>(Comp: T) {
       const { prototype = {} } = ClassComp || {};
 
       prototype.render = function () {
-        return trackFun(classOriginalRender.bind(this), forceRender);
+        return trackFun(classOriginalRender.bind(this), trackObj);
       };
 
       return (props: any) => <ClassComp {...props} />;
-    }, [Comp, isClassComp, isForward, forceRender]);
+    }, [Comp, isClassComp, isForward, trackObj]);
 
     return render(props, ref);
   };

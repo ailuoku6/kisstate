@@ -3,7 +3,10 @@ import {
   globalStore,
   addClearCallbackArray,
   EffectCallback,
+  cleanTrack,
 } from '../store';
+import { ITrackObj } from '../types';
+import Scheduler from '../scheduler';
 
 // 类型定义
 // type Constructor<T = object> = new (...args: any[]) => T;
@@ -19,7 +22,7 @@ type WatchFnType = {
   deps: string[];
 };
 
-type CallbackMapType = Map<Function, Set<string | Symbol>>;
+type TrackObjMapType = Map<ITrackObj, Set<string | Symbol>>;
 
 const execEffect = (self: any) => {
   const handlers = innerEffctWeakMap.get(self) || [];
@@ -27,14 +30,17 @@ const execEffect = (self: any) => {
 };
 
 const execCallbackByPropName = (
-  callbackMap: CallbackMapType,
+  trackObjMap: TrackObjMapType,
   propName: string,
 ) => {
-  (callbackMap?.keys() || [])
-    .filter((callbackhandler) => {
-      return callbackMap.get(callbackhandler)?.has(propName);
-    })
-    .forEach((handler) => handler?.());
+  const trackObjs = (trackObjMap?.keys() || []).filter((trackObj) => {
+    return trackObjMap.get(trackObj)?.has(propName);
+  });
+  // trackObjs.filter((obj) => !obj.fn).forEach((obj) => cleanTrack(obj));
+  trackObjs
+    .filter((obj) => obj.fn)
+    .forEach((trackObj) => Scheduler.add(trackObj));
+  trackObjs.filter((obj) => !obj.fn).forEach((obj) => cleanTrack(obj));
 };
 
 const pushEffect = (self: any, handleEffect: EffectCallback) => {
@@ -62,12 +68,12 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     // 正确使用 new 调用原始构造函数
     const instance = new Constructor_(...args);
 
-    const callbackMap: CallbackMapType = new Map<
-      Function,
+    const trackObjMap: TrackObjMapType = new Map<
+      ITrackObj,
       Set<string | Symbol>
     >();
 
-    (instance as any).__callbackMap__ = callbackMap;
+    (instance as any).__trackObjMap__ = trackObjMap;
 
     // 创建代理对象
     const proxy = new Proxy(instance, {
@@ -78,22 +84,22 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
         if (hasChange) {
           // 触发所有监听回调
           execEffect(proxy);
-          execCallbackByPropName(callbackMap, prop);
+          execCallbackByPropName(trackObjMap, prop);
         }
 
         return result;
       },
       get(target, p, receiver) {
-        const curCallBack = globalStore.curCallBack;
-        if (curCallBack) {
+        const curTrackObj = globalStore.curTrackObj;
+        if (curTrackObj) {
           const linsenSet =
-            callbackMap.get(curCallBack) || new Set<string | Symbol>();
+            trackObjMap.get(curTrackObj) || new Set<string | Symbol>();
 
           linsenSet.add(p);
 
-          callbackMap.set(curCallBack, linsenSet);
-          addClearCallbackArray(curCallBack, () => {
-            callbackMap.delete(curCallBack);
+          trackObjMap.set(curTrackObj, linsenSet);
+          addClearCallbackArray(curTrackObj, () => {
+            trackObjMap.delete(curTrackObj);
           });
         }
         return Reflect.get(target, p, receiver);
@@ -196,7 +202,7 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
           // 触发computed副作用
           execEffect(self);
           execCallbackByPropName(
-            self.__callbackMap__ as CallbackMapType,
+            self.__trackObjMap__ as TrackObjMapType,
             methodName,
           );
         }
