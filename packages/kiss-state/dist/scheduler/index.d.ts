@@ -7,6 +7,7 @@ declare class Scheduler {
     add(task: ITrackObj, option?: {
         immediate?: boolean;
     }): void;
+    startTask(): void;
     run(): void;
 }
 declare const _default: Scheduler;

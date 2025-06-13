@@ -14,17 +14,30 @@ class Scheduler {
   }
 
   add(task: ITrackObj, option: { immediate?: boolean } = {}) {
+    const { immediate } = option;
     this.queue.push(task);
-    this.run();
+    if (immediate) {
+      this.run();
+      return;
+    }
+    this.startTask();
+  }
+
+  startTask() {
+    if (this.isRunning) return;
+    this.isRunning = true;
+    setTimeout(() => {
+      this.run();
+      this.isRunning = false;
+    }, 0);
   }
 
   // 参考React的批处理机制消费任务
   run() {
-    if (this.isRunning) return;
-    this.isRunning = true;
-    const task = this.queue.shift();
-    task && task.fn?.();
-    this.isRunning = false;
+    while (this.queue.length) {
+      const task = this.queue.shift();
+      task && task.fn?.();
+    }
   }
 }
 

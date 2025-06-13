@@ -26,7 +26,8 @@ type TrackObjMapType = Map<ITrackObj, Set<string | Symbol>>;
 
 const execEffect = (self: any) => {
   const handlers = innerEffctWeakMap.get(self) || [];
-  handlers.forEach((handler) => handler());
+  // handlers.forEach((handler) => handler());
+  handlers.forEach((handler) => Scheduler.add({ fn: handler }));
 };
 
 const execCallbackByPropName = (
@@ -124,6 +125,14 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
             self[watchFn.methodName]?.();
           }
         }, 0);
+        // const newValue = watchFn.deps.map((key) => self[key]);
+        // const hasDiff = newValue.some(
+        //   (value, index) => value !== cacheValue[index],
+        // );
+        // cacheValue = newValue;
+        // if (hasDiff) {
+        //   self[watchFn.methodName]?.();
+        // }
       };
       pushEffect(proxy, handler);
     });
