@@ -115,7 +115,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
       let cacheValue: any[] = [];
       const handler = () => {
         // 副作用的执行放宏任务里，防止链式computed依赖多次触发
-        setTimeout(() => {
+        const fn = () => {
           const newValue = watchFn.deps.map((key) => self[key]);
           const hasDiff = newValue.some(
             (value, index) => value !== cacheValue[index],
@@ -124,15 +124,8 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
           if (hasDiff) {
             self[watchFn.methodName]?.();
           }
-        }, 0);
-        // const newValue = watchFn.deps.map((key) => self[key]);
-        // const hasDiff = newValue.some(
-        //   (value, index) => value !== cacheValue[index],
-        // );
-        // cacheValue = newValue;
-        // if (hasDiff) {
-        //   self[watchFn.methodName]?.();
-        // }
+        };
+        setTimeout(fn, 0);
       };
       pushEffect(proxy, handler);
     });
