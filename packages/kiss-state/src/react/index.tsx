@@ -40,7 +40,7 @@ const useForceRender = () => {
 let tractId = 0;
 
 const useTrackObj = (renderFn: Function) => {
-  const trackObjRef = useRef<ITrackObj>({ fn: renderFn, id: `react-track-${tractId++}` });
+  const trackObjRef = useRef<ITrackObj>({ fn: renderFn, id: `R-${tractId++}` });
 
   useEffect(() => {
     trackObjRef.current.fn = renderFn;

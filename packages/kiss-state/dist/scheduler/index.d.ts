@@ -1,8 +1,9 @@
 import { ITrackObj } from '../types';
 declare class Scheduler {
     private queue;
-    private isRunning;
+    private hasNextConsumer;
     private supportMessageChannel;
+    private channel;
     constructor();
     add(task: ITrackObj, option?: {
         immediate?: boolean;

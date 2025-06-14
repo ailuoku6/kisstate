@@ -6,11 +6,19 @@ const supportMessageChannel = () => {
 
 class Scheduler {
   private queue: ITrackObj[] = [];
-  private isRunning = false;
+  private hasNextConsumer = false;
   private supportMessageChannel = false;
+  private channel: MessageChannel | null = null;
 
   constructor() {
     this.supportMessageChannel = supportMessageChannel();
+    if (this.supportMessageChannel) {
+      this.channel = new MessageChannel();
+
+      this.channel.port1.onmessage = () => {
+        this.run();
+      };
+    }
   }
 
   add(task: ITrackObj, option: { immediate?: boolean } = {}) {
@@ -24,19 +32,29 @@ class Scheduler {
   }
 
   startTask() {
-    if (this.isRunning) return;
-    this.isRunning = true;
-    setTimeout(() => {
-      this.run();
-      this.isRunning = false;
-    }, 0);
+    if (this.hasNextConsumer) return;
+    this.hasNextConsumer = true;
+    if (this.supportMessageChannel && this.channel) {
+      this.channel.port2.postMessage(null);
+    } else {
+      setTimeout(() => {
+        this.run();
+      }, 0);
+    }
   }
 
-  // 参考React的批处理机制消费任务
+  // 消费任务
   run() {
-    while (this.queue.length) {
-      const task = this.queue.shift();
-      task && task.fn?.();
+    const runSet = new Set<ITrackObj>();
+    const tasks = this.queue;
+    this.queue = [];
+    this.hasNextConsumer = false;
+    while (tasks.length) {
+      const task = tasks.shift();
+      if (task && !runSet.has(task)) {
+        task.fn?.();
+        runSet.add(task);
+      }
     }
   }
 }

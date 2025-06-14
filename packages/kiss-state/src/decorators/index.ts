@@ -125,7 +125,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
             self[watchFn.methodName]?.();
           }
         };
-        setTimeout(fn, 0);
+        Scheduler.add({ fn });
       };
       pushEffect(proxy, handler);
     });
