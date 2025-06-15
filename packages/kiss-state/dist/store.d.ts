@@ -1,6 +1,6 @@
 import { ITrackObj } from './types';
 export type EffectCallback = () => void;
-export declare const innerEffctWeakMap: WeakMap<object, EffectCallback[]>;
+export declare const innerEffctWeakMap: WeakMap<object, ITrackObj[]>;
 export declare const clearCallbacks: WeakMap<ITrackObj, Function[]>;
 export declare const globalStore: {
     curTrackObj: ITrackObj | null;

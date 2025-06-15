@@ -26,8 +26,13 @@ type TrackObjMapType = Map<ITrackObj, Set<string | Symbol>>;
 
 const execEffect = (self: any) => {
   const handlers = innerEffctWeakMap.get(self) || [];
-  // handlers.forEach((handler) => handler());
-  handlers.forEach((handler) => Scheduler.add({ fn: handler }));
+  handlers.forEach((handler) => Scheduler.add(handler));
+};
+
+const pushEffect = (self: any, trackObj: ITrackObj) => {
+  const handlers = innerEffctWeakMap.get(self) || [];
+  handlers.push(trackObj);
+  innerEffctWeakMap.set(self, handlers);
 };
 
 const execCallbackByPropName = (
@@ -42,12 +47,6 @@ const execCallbackByPropName = (
     .filter((obj) => obj.fn)
     .forEach((trackObj) => Scheduler.add(trackObj));
   trackObjs.filter((obj) => !obj.fn).forEach((obj) => cleanTrack(obj));
-};
-
-const pushEffect = (self: any, handleEffect: EffectCallback) => {
-  const handlers = innerEffctWeakMap.get(self) || [];
-  handlers.push(handleEffect);
-  innerEffctWeakMap.set(self, handlers);
 };
 
 /**
@@ -114,7 +113,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
     watchFns.forEach((watchFn: WatchFnType) => {
       let cacheValue: any[] = [];
       const handler = () => {
-        // 副作用的执行放宏任务里，防止链式computed依赖多次触发
+        // 副作用的执行放任务队列里，防止链式computed依赖多次触发
         const fn = () => {
           const newValue = watchFn.deps.map((key) => self[key]);
           const hasDiff = newValue.some(
@@ -125,9 +124,10 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
             self[watchFn.methodName]?.();
           }
         };
-        Scheduler.add({ fn });
+        Scheduler.add({ fn, id: `w-${watchFn.methodName}` });
       };
-      pushEffect(proxy, handler);
+      const id = `w-${watchFn.methodName}`;
+      pushEffect(proxy, { fn: handler, id });
     });
     execEffect(proxy);
     return proxy; // 替换为代理对象
@@ -209,7 +209,8 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
           );
         }
       };
-      pushEffect(self, handleEffect);
+      const id = `c-${methodName}`;
+      pushEffect(self, { fn: handleEffect, id });
     };
 
     descriptor.get = function () {

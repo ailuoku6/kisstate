@@ -1,7 +1,7 @@
 import { ITrackObj } from './types';
 
 export type EffectCallback = () => void;
-export const innerEffctWeakMap = new WeakMap<object, EffectCallback[]>();
+export const innerEffctWeakMap = new WeakMap<object, ITrackObj[]>();
 export const clearCallbacks = new WeakMap<ITrackObj, Array<Function>>();
 // export const proxyMap = new WeakMap<object, any>(); // 缓存代理对象
 
