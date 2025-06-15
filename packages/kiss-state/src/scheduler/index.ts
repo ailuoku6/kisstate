@@ -31,7 +31,7 @@ class Scheduler {
     this.startTask();
   }
 
-  startTask() {
+  private startTask() {
     if (this.hasNextConsumer) return;
     this.hasNextConsumer = true;
     if (this.supportMessageChannel && this.channel) {
@@ -44,7 +44,7 @@ class Scheduler {
   }
 
   // 消费任务
-  run() {
+  private run() {
     const runSet = new Set<ITrackObj>();
     const tasks = this.queue;
     this.queue = [];
