@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# cp -p README.md packages/kiss-state/README.md
-# cp -p README_EN.md packages/kiss-state/README_EN.md
-
-#!/bin/bash
-
 # 启用严格模式，确保脚本安全运行
 set -euo pipefail
 
