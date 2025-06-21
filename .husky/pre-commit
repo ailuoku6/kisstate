@@ -1,0 +1,15 @@
+
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit hook..."
+
+# 运行复制脚本
+bash ./scripts/copy-readmes.sh
+
+# 检查是否有需要提交的变更
+if git diff --cached --quiet; then
+    echo "No changes to commit after README copy"
+else
+    echo "README updates added to commit"
+fi

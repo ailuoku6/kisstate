@@ -17,6 +17,10 @@ class User {
   obj = {};
   testStr = 'test';
   testNum = 1;
+  skill: string[] = ['js', 'cpp', 'linux'];
+  wallet: any = {
+    money: 0,
+  };
 
   constructor() {
     this.age = 17;
@@ -24,6 +28,22 @@ class User {
 
   fun() {
 
+  }
+
+  setSkill(skill: string[]) {
+    this.skill = skill;
+  }
+
+  addSkill(skill: string) {
+    this.skill.push(skill);
+    // 这里必须解构赋值，否则不会触发依赖更新
+    this.skill = [...this.skill];
+  }
+
+  setWalletContent(key: string, value: any) {
+    this.wallet[key] = value;
+    // 这里必须解构赋值，否则不会触发依赖更新
+    this.wallet = { ...this.wallet };
   }
 
   @watchProps('age')
@@ -130,6 +150,7 @@ class AppClass extends React.Component {
     super(props);
     this.state = {
       num: 1,
+      inputValue: '',
     };
     this.childRef = React.createRef<typeof Child>();
     this.classChildRef = React.createRef();
@@ -173,6 +194,25 @@ class AppClass extends React.Component {
             }}
           ></input>
           <p>say: {user.say}</p>
+          <div>
+            <input value={this.state.inputValue} onChange={e => {
+              this.setState({
+                inputValue: e.target.value
+              })
+            }} />
+            <button onClick={() => {
+              user.addSkill(this.state.inputValue);
+              this.setState({
+                inputValue: ''
+              })
+            }}>add skill</button>
+          </div>
+
+          <p>skill: {user.skill.join(',')}</p>
+          <button onClick={() => {
+            user.setWalletContent('money', user.wallet.money + 1);
+          }}>money plus</button>
+          <p>wallet money: {user.wallet.money}</p>
         </div>
         <button
           onClick={() => {
