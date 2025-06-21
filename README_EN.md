@@ -82,7 +82,9 @@ Connect React components using `observer` HOC:
 const HocApp = observer(App);
 ```
 
-### 5. Important Notes 📢: kisstate does not recursively deeply observe nested Objects and Arrays. To trigger changes and side effects, use destructuring assignments.
+### 5. Important Notes 📢
+
+kisstate does not recursively deeply observe nested Objects and Arrays. To trigger changes and side effects, use destructuring assignments.
 
 ```typescript
 @ObservableClass
