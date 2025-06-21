@@ -82,6 +82,36 @@ Connect React components using `observer` HOC:
 const HocApp = observer(App);
 ```
 
+### 5. Important Notes 📢: kisstate does not recursively deeply observe nested Objects and Arrays. To trigger changes and side effects, use destructuring assignments.
+
+```typescript
+@ObservableClass
+class User {
+  name = 'jude';
+  age = 18;
+  skill: string[] = [];
+  wallet: any = {};
+
+  constructor() {}
+
+  setSkill(skill: string[]) {
+    this.skill = skill;
+  }
+
+  addSkill(skill: string) {
+    this.skill.push(skill);
+    // Note: Destructuring assignment is required here to trigger dependency updates
+    this.skill = [...this.skill];
+  }
+
+  setWalletContent(key: string, value: any) {
+    this.wallet[key] = value;
+    // Note: Destructuring assignment is required here to trigger dependency updates
+    this.wallet = { ...this.wallet };
+  }
+}
+```
+
 ---
 
 ## Complete Example 🚀
@@ -94,9 +124,27 @@ import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 class User {
   name = 'jude';
   age = 26;
+  skill: string[] = [];
+  wallet: any = {};
 
   constructor() {
     this.age = 17;
+  }
+
+  setSkill(skill: string[]) {
+    this.skill = skill;
+  }
+
+  addSkill(skill: string) {
+    this.skill.push(skill);
+    // Note: Destructuring assignment is required here to trigger dependency updates
+    this.skill = [...this.skill];
+  }
+
+  setWalletContent(key: string, value: any) {
+    this.wallet[key] = value;
+    // Note: Destructuring assignment is required here to trigger dependency updates
+    this.wallet = { ...this.wallet };
   }
 
   // 2. Property change observation

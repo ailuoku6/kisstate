@@ -84,6 +84,36 @@ get nextnextAge() {
 const HocApp = observer(App);
 ```
 
+### 5. 注意事项📢：kisstate不会递归地深度监听子Object和Array，如需变更及触发副作用，请通过解构实现
+
+```typescript
+@ObservableClass
+class User {
+  name = 'jude';
+  age = 18;
+  skill: string[] = [];
+  wallet: any = {};
+
+  constructor() {}
+
+  setSkill(skill: string[]) {
+    this.skill = skill;
+  }
+
+  addSkill(skill: string) {
+    this.skill.push(skill);
+    // 注意：这里必须解构赋值，否则不会触发依赖更新
+    this.skill = [...this.skill];
+  }
+
+  setWalletContent(key: string, value: any) {
+    this.wallet[key] = value;
+    // 注意：这里必须解构赋值，否则不会触发依赖更新
+    this.wallet = { ...this.wallet };
+  }
+}
+```
+
 ---
 
 ## 完整示例 🚀
@@ -96,9 +126,27 @@ import { ObservableClass, watchProps, observer, computed } from 'kisstate';
 class User {
   name = 'jude';
   age = 26;
+  skill: string[] = [];
+  wallet: any = {};
 
   constructor() {
     this.age = 17;
+  }
+
+  setSkill(skill: string[]) {
+    this.skill = skill;
+  }
+
+  addSkill(skill: string) {
+    this.skill.push(skill);
+    // 注意：这里必须解构赋值，否则不会触发依赖更新
+    this.skill = [...this.skill];
+  }
+
+  setWalletContent(key: string, value: any) {
+    this.wallet[key] = value;
+    // 注意：这里必须解构赋值，否则不会触发依赖更新
+    this.wallet = { ...this.wallet };
   }
 
   // 2. 属性变化监听
