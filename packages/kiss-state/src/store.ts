@@ -20,8 +20,6 @@ export const getValues = (trackObj: ITrackObj) => {
     obj && Object.assign(res, { [i++]: obj });
   });
 
-  console.info('debugvalue', res);
-
   return res;
 };
 
