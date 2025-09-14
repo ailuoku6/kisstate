@@ -4,6 +4,7 @@ import {
   addClearCallbackArray,
   EffectCallback,
   cleanTrack,
+  globalStores,
 } from '../store';
 import { ITrackObj } from '../types';
 import Scheduler from '../scheduler';
@@ -108,6 +109,12 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
 
     const watchFns = Constructor_.prototype.__watchFns__ || [];
 
+    Constructor_.prototype.__getDebugValue__ = function (trackObj: ITrackObj) {
+      const trackObjMap: TrackObjMapType = (this as any).__trackObjMap__;
+      const trackPropSet = trackObjMap.get(trackObj);
+      return trackPropSet?.size ? this : undefined;
+    };
+
     const self: any = proxy;
 
     watchFns.forEach((watchFn: WatchFnType) => {
@@ -130,6 +137,7 @@ export function ObservableClass<T extends new (...args: any[]) => object>(
       pushEffect(proxy, { fn: handler, id });
     });
     execEffect(proxy);
+    globalStores.push(instance);
     return proxy; // 替换为代理对象
   };
 

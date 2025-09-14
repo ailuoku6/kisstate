@@ -3,10 +3,24 @@ import { ITrackObj } from './types';
 export type EffectCallback = () => void;
 export const innerEffctWeakMap = new WeakMap<object, ITrackObj[]>();
 export const clearCallbacks = new WeakMap<ITrackObj, Array<Function>>();
+export const globalStores: Array<Object> = [];
 // export const proxyMap = new WeakMap<object, any>(); // 缓存代理对象
 
 export const globalStore: { curTrackObj: ITrackObj | null } = {
   curTrackObj: null,
+};
+
+export const getValues = (trackObj: ITrackObj) => {
+  const res = {};
+
+  let i = 0;
+
+  globalStores.forEach((storeObj) => {
+    const obj = (storeObj as any).__getDebugValue__(trackObj);
+    obj && Object.assign(res, { [i++]: obj });
+  });
+
+  return res;
 };
 
 export const addClearCallbackArray = (

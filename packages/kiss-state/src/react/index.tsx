@@ -6,8 +6,9 @@ import React, {
   ForwardedRef,
   forwardRef,
   useRef,
+  useDebugValue,
 } from 'react';
-import { trackFun } from '../store';
+import { getValues, trackFun } from '../store';
 import { ITrackObj } from '../types';
 
 const isForwardRef = (Component: any) => {
@@ -39,6 +40,10 @@ const useForceRender = () => {
 
 let tractId = 0;
 
+const useKissDebug = (trackObj: ITrackObj) => {
+  useDebugValue(trackObj, (trackObj) => getValues(trackObj));
+}
+
 const useTrackObj = (renderFn: Function) => {
   const trackObjRef = useRef<ITrackObj>({ fn: renderFn, id: `R-${tractId++}` });
 
@@ -48,6 +53,8 @@ const useTrackObj = (renderFn: Function) => {
       trackObjRef.current.fn = null;
     };
   }, [renderFn]);
+
+  useKissDebug(trackObjRef.current);
 
   return trackObjRef.current;
 }
