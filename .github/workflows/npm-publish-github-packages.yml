@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,13 +18,14 @@ jobs:
 
       - run: npm i -g pnpm@10.6.3
 
-      - run: pnpm i
+      - run: pnpm install
 
-      # build kiss-state
-      - run: cd packages/kiss-state && pnpm run roll-build
+      # build all packages (you can add more)
+      - name: Build kiss-state
+        run: cd packages/kiss-state && pnpm run roll-build
 
-      # build kiss-valdi
-      - run: cd packages/kiss-valdi && pnpm run roll-build
+      - name: Build kiss-valdi
+        run: cd packages/kiss-valdi && pnpm run roll-build
 
   publish:
     needs: build
@@ -46,62 +48,65 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
 
-      # -----------------------------
-      # Read local package version
-      # -----------------------------
-      - name: Read local version
-        id: local_version
+      #
+      # 1. Read local version from package.json
+      #
+      - name: Read version
+        id: version
         run: |
-          PKG_VERSION=$(node -p "require('./${{ matrix.package.path }}/package.json').version")
-          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(node -p "require('./${{ matrix.package.path }}/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # -----------------------------
-      # Check npm version existence
-      # -----------------------------
-      - name: Check npm for existing version
-        id: check_npm
+      #
+      # 2. Check if the version already exists on npm
+      #
+      - name: Check existing npm version
+        id: check
         run: |
-          PACKAGE_NAME=${{ matrix.package.name }}
-          VERSION=${{ steps.local_version.outputs.version }}
+          NAME=${{ matrix.package.name }}
+          VERSION=${{ steps.version.outputs.version }}
 
-          EXISTS=$(npm view "$PACKAGE_NAME@$VERSION" version || echo "none")
+          EXIST=$(npm view "$NAME@$VERSION" version || echo "none")
 
-          if [[ "$EXISTS" == "none" ]]; then
+          if [ "$EXIST" = "none" ]; then
             echo "publish_needed=true" >> $GITHUB_OUTPUT
           else
             echo "publish_needed=false" >> $GITHUB_OUTPUT
           fi
 
-      # -----------------------------
-      # Skip publishing
-      # -----------------------------
+      #
+      # 3. Skip if version exists
+      #
       - name: Skip publish (version exists)
-        if: steps.check_npm.outputs.publish_needed == 'false'
-        run: echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
+        if: steps.check.outputs.publish_needed == 'false'
+        run: |
+          echo "${{ matrix.package.name }} skipped (version already exists)."
 
-      # -----------------------------
-      # Publish package (non-blocking)
-      # -----------------------------
-      - name: Publish package
-        if: steps.check_npm.outputs.publish_needed == 'true'
+      #
+      # 4. Publish (non-blocking)
+      #
+      - name: Publish npm package
+        if: steps.check.outputs.publish_needed == 'true'
         continue-on-error: true
         run: |
-          echo "开始发布 ${{ matrix.package.name }}..."
+          echo "Publishing ${{ matrix.package.name }}..."
           cd ${{ matrix.package.path }}
-          npm publish || echo "发布失败但继续执行"
+          npm publish || echo "Publish failed but continuing."
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # -----------------------------
-      # Summary: executed
-      # -----------------------------
+      #
+      # 5. Summary for publish attempt
+      #
       - name: Summary - published (attempted)
-        if: steps.check_npm.outputs.publish_needed == 'true'
-        run: echo "🔹 ${{ matrix.package.name }}: 发布步骤已执行（成功或失败不会阻塞其他）"
+        if: steps.check.outputs.publish_needed == 'true'
+        run: |
+          echo "${{ matrix.package.name }} publish attempted."
 
-      # -----------------------------
-      # Summary: skipped
-      # -----------------------------
+      #
+      # 6. Summary for skipped
+      #
       - name: Summary - skipped
-        if: steps.check_npm.outputs.publish_needed == 'false'
-        run: echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
+        if: steps.check.outputs.publish_needed == 'false'
+        run: |
+          echo "${{ matrix.package.name }} skipped (version already exists)."
