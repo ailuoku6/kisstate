@@ -16,6 +16,7 @@ jobs:
           node-version: 20
 
       - run: npm i -g pnpm@10.6.3
+
       - run: pnpm i
 
       # build kiss-state
@@ -27,8 +28,9 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+
     strategy:
-      fail-fast: false # 关键：任何一个失败不影响另一个
+      fail-fast: false
       matrix:
         package:
           - name: kiss-state
@@ -44,13 +46,19 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
 
+      # -----------------------------
+      # Read local package version
+      # -----------------------------
       - name: Read local version
         id: local_version
         run: |
           PKG_VERSION=$(node -p "require('./${{ matrix.package.path }}/package.json').version")
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Check if version already exists on npm
+      # -----------------------------
+      # Check npm version existence
+      # -----------------------------
+      - name: Check npm for existing version
         id: check_npm
         run: |
           PACKAGE_NAME=${{ matrix.package.name }}
@@ -64,13 +72,19 @@ jobs:
             echo "publish_needed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Skip publish if version exists
+      # -----------------------------
+      # Skip publishing
+      # -----------------------------
+      - name: Skip publish (version exists)
         if: steps.check_npm.outputs.publish_needed == 'false'
-        run: echo "已存在版本，跳过发布 ${{ matrix.package.name }}"
+        run: echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
 
+      # -----------------------------
+      # Publish package (non-blocking)
+      # -----------------------------
       - name: Publish package
         if: steps.check_npm.outputs.publish_needed == 'true'
-        continue-on-error: true # ✨ 核心：失败不会阻塞其他包
+        continue-on-error: true
         run: |
           echo "开始发布 ${{ matrix.package.name }}..."
           cd ${{ matrix.package.path }}
@@ -78,9 +92,16 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish result summary
-        run: |
-          if [ "${{ steps.check_npm.outputs.publish_needed }}" == "false" ]; then
-            echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
-          else
-            echo "🔹 ${{ matrix.package.name }}: 发布步骤已执行（成功或失败不影响其他）"
+      # -----------------------------
+      # Summary: executed
+      # -----------------------------
+      - name: Summary - published (attempted)
+        if: steps.check_npm.outputs.publish_needed == 'true'
+        run: echo "🔹 ${{ matrix.package.name }}: 发布步骤已执行（成功或失败不会阻塞其他）"
+
+      # -----------------------------
+      # Summary: skipped
+      # -----------------------------
+      - name: Summary - skipped
+        if: steps.check_npm.outputs.publish_needed == 'false'
+        run: echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
