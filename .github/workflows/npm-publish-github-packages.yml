@@ -16,7 +16,6 @@ jobs:
           node-version: 20
 
       - run: npm i -g pnpm@10.6.3
-
       - run: pnpm i
 
       # build kiss-state
@@ -25,9 +24,18 @@ jobs:
       # build kiss-valdi
       - run: cd packages/kiss-valdi && pnpm run roll-build
 
-  publish-npm:
+  publish:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # 关键：任何一个失败不影响另一个
+      matrix:
+        package:
+          - name: kiss-state
+            path: packages/kiss-state
+          - name: kiss-valdi
+            path: packages/kiss-valdi
+
     steps:
       - uses: actions/checkout@v4
 
@@ -36,14 +44,43 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
 
-      # publish kiss-state
-      - name: Publish kiss-state
-        run: cd packages/kiss-state && npm publish
+      - name: Read local version
+        id: local_version
+        run: |
+          PKG_VERSION=$(node -p "require('./${{ matrix.package.path }}/package.json').version")
+          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if version already exists on npm
+        id: check_npm
+        run: |
+          PACKAGE_NAME=${{ matrix.package.name }}
+          VERSION=${{ steps.local_version.outputs.version }}
+
+          EXISTS=$(npm view "$PACKAGE_NAME@$VERSION" version || echo "none")
+
+          if [[ "$EXISTS" == "none" ]]; then
+            echo "publish_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish_needed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip publish if version exists
+        if: steps.check_npm.outputs.publish_needed == 'false'
+        run: echo "已存在版本，跳过发布 ${{ matrix.package.name }}"
+
+      - name: Publish package
+        if: steps.check_npm.outputs.publish_needed == 'true'
+        continue-on-error: true # ✨ 核心：失败不会阻塞其他包
+        run: |
+          echo "开始发布 ${{ matrix.package.name }}..."
+          cd ${{ matrix.package.path }}
+          npm publish || echo "发布失败但继续执行"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # publish kiss-valdi
-      - name: Publish kiss-valdi
-        run: cd packages/kiss-valdi && npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish result summary
+        run: |
+          if [ "${{ steps.check_npm.outputs.publish_needed }}" == "false" ]; then
+            echo "🔹 ${{ matrix.package.name }}: 已跳过（版本已存在）"
+          else
+            echo "🔹 ${{ matrix.package.name }}: 发布步骤已执行（成功或失败不影响其他）"
