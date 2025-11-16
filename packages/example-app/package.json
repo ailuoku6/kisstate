@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "kisstate": "workspace: *",
+    "kisstate": "1.1.2",
     "mobx": "^6.13.7",
     "mobx-react": "^9.2.0",
     "react": "^19.1.0",
