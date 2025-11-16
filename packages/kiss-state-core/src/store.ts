@@ -1,4 +1,4 @@
-import { ITrackObj } from './types';
+import { ITrackObj } from './types/index';
 
 export type EffectCallback = () => void;
 export const innerEffctWeakMap = new WeakMap<object, ITrackObj[]>();
@@ -56,3 +56,4 @@ export const trackFun = (fn: Function, trackObj: ITrackObj) => {
   }
   return res;
 };
+

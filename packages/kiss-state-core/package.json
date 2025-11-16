@@ -1,0 +1,30 @@
+{
+  "name": "kiss-state-core",
+  "version": "1.1.2",
+  "description": "Core framework-agnostic state management library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "observable",
+    "state management",
+    "reactive",
+    "decorators"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.3"
+  },
+  "packageManager": "pnpm@10.6.3",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ailuoku6/kisstate"
+  },
+  "homepage": "https://github.com/ailuoku6/kisstate"
+}

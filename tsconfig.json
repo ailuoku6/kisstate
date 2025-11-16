@@ -17,6 +17,7 @@
     "jsx": "react-jsx",
     "paths": {
       "kisstate": ["./packages/kiss-state/src"],
+      "kiss-state-core": ["./packages/kiss-state-core/src"],
       "example-app": ["./packages/example-app/src"]
     }
   },

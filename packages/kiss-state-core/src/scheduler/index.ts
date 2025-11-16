@@ -1,4 +1,4 @@
-import { ITrackObj } from '../types';
+import { ITrackObj } from '../types/index';
 
 const supportMessageChannel = () => {
   return typeof MessageChannel !== 'undefined';
@@ -60,3 +60,4 @@ class Scheduler {
 }
 
 export default new Scheduler();
+

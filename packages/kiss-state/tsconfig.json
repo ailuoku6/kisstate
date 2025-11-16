@@ -3,7 +3,7 @@
   "include": ["src"],
   "compilerOptions": {
     "outDir": "./dist", // 指定输出目录（如 ./dist）
-    "rootDir": "./src", // 指定源代码目录（如 ./src）
+    "rootDir": "./src", // 设置根目录，确保输出结构正确
     "noEmit": false, // 确保允许输出文件（默认 false）
     "useDefineForClassFields": true, // 确保类字段符合新标准
     // "experimentalDecorators": false,    // 关闭旧版装饰器
@@ -16,7 +16,8 @@
     // "target": "ES2022",
     // "esModuleInterop": true
     "paths": {
-      "tslib": ["./node_modules/tslib/tslib.d.ts"]
+      "tslib": ["./node_modules/tslib/tslib.d.ts"],
+      "kiss-state-core": ["../kiss-state-core/dist/index"]
     }
   }
 }
