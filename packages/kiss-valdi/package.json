@@ -1,0 +1,44 @@
+{
+  "name": "kiss-valdi",
+  "version": "0.0.1",
+  "description": "Valdi bindings for kiss-state-core",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "node --experimental-specifier-resolution=node dist/test/index.js",
+    "build": "tsc",
+    "roll-build": "cd ../kiss-state-core && npm run build && cd ../kiss-valdi && rollup -c"
+  },
+  "keywords": [
+    "observable",
+    "valdi",
+    "model",
+    "state management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.24.3",
+    "@babel/preset-env": "^7.24.3",
+    "@babel/preset-typescript": "^7.24.1",
+    "@types/uuid": "^9.0.8",
+    "kiss-state-core": "workspace:*",
+    "rollup": "^4.13.0",
+    "rollup-plugin-dts": "^6.2.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.4.3",
+    "web-vitals": "^2.1.0"
+  },
+  "packageManager": "pnpm@10.6.3",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ailuoku6/kisstate"
+  },
+  "homepage": "https://github.com/ailuoku6/kisstate"
+}
