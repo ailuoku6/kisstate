@@ -8,8 +8,8 @@ import React, {
   useRef,
   useDebugValue,
 } from 'react';
-import { getValues, trackFun } from '../store';
-import { ITrackObj } from '../types';
+import { getValues, trackFun } from 'kiss-state-core';
+import { ITrackObj } from 'kiss-state-core';
 
 const isForwardRef = (Component: any) => {
   return (

@@ -56,3 +56,4 @@ export const trackFun = (fn: Function, trackObj: ITrackObj) => {
   }
   return res;
 };
+

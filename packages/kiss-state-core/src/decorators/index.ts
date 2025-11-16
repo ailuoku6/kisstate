@@ -2,7 +2,6 @@ import {
   innerEffctWeakMap,
   globalStore,
   addClearCallbackArray,
-  EffectCallback,
   cleanTrack,
   globalStores,
 } from '../store';
@@ -235,3 +234,4 @@ export function computed<T extends object>(...props: PropertyKeyOf<T>[]) {
     };
   };
 }
+

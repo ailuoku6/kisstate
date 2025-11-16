@@ -1,4 +1,4 @@
-import { ObservableClass, watchProps, computed } from '../decorators/index';
+import { ObservableClass, watchProps, computed } from 'kiss-state-core';
 
 @ObservableClass
 class User {
