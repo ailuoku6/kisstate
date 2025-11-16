@@ -6,8 +6,8 @@ import {
   cleanTrack,
   globalStores,
 } from '../store';
-import { ITrackObj } from '../types';
-import Scheduler from '../scheduler';
+import { ITrackObj } from '../types/index';
+import Scheduler from '../scheduler/index';
 
 // 类型定义
 // type Constructor<T = object> = new (...args: any[]) => T;
@@ -40,7 +40,7 @@ const execCallbackByPropName = (
   trackObjMap: TrackObjMapType,
   propName: string,
 ) => {
-  const trackObjs = (trackObjMap?.keys() || []).filter((trackObj) => {
+  const trackObjs = Array.from(trackObjMap?.keys() || []).filter((trackObj) => {
     return trackObjMap.get(trackObj)?.has(propName);
   });
   // trackObjs.filter((obj) => !obj.fn).forEach((obj) => cleanTrack(obj));

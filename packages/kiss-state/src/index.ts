@@ -1,3 +1,3 @@
 // export * from './store';
-export * from './decorators';
-export * from './react';
+export * from './decorators/index';
+export * from './react/index';

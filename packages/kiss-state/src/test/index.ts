@@ -1,4 +1,4 @@
-import { ObservableClass, watchProps, computed } from '../decorators';
+import { ObservableClass, watchProps, computed } from '../decorators/index';
 
 @ObservableClass
 class User {
