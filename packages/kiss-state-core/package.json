@@ -1,6 +1,6 @@
 {
   "name": "kiss-state-core",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Core framework-agnostic state management library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,4 +28,3 @@
   },
   "homepage": "https://github.com/ailuoku6/kisstate"
 }
-
